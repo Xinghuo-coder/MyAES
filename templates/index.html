@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据加密与密码管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .password-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .password-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .password-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .password-item.selected {
+            background: #d4e3fc;
+            border-left: 4px solid #667eea;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+        
+        .filename-display {
+            display: inline-block;
+            margin-left: 15px;
+            color: #34495e;
+            font-weight: 500;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首次设置界面 -->
+        <div id="setup-screen" class="card {% if not first_time or logged_in %}hidden{% endif %}">
+            <h1>🔐 欢迎使用数据加密与密码管理系统</h1>
+            <p class="subtitle">首次使用，请设置主密码</p>
+            
+            <div class="info-box">
+                <strong>⚠️ 重要提示：</strong>
+                <ul>
+                    <li>主密码将用于保护所有数据，请妥善保管</li>
+                    <li>建议：至少12位，包含大小写字母、数字和符号</li>
+                    <li>遗失主密码将无法恢复数据</li>
+                </ul>
+            </div>
+            
+            <div id="setup-alert"></div>
+            
+            <form id="setup-form" onsubmit="return false;">
+                <div class="form-group">
+                    <label>设置主密码</label>
+                    <input type="password" id="setup-password1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>确认主密码</label>
+                    <input type="password" id="setup-password2" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="setupMasterPassword()">确认设置</button>
+            </form>
+        </div>
+        
+        <!-- 登录界面 -->
+        <div id="login-screen" class="card {% if first_time or logged_in %}hidden{% endif %}">
+            <h1>🔐 数据加密与密码管理系统</h1>
+            <p class="subtitle">请输入主密码登录</p>
+            
+            <div id="login-alert"></div>
+            
+            <form id="login-form" onsubmit="return false;">
+                <div class="form-group">
+                    <label>主密码</label>
+                    <input type="password" id="login-password" required autofocus>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" onclick="login()">登录</button>
+            </form>
+        </div>
+        
+        <!-- 主界面 -->
+        <div id="main-screen" class="{% if not logged_in %}hidden{% endif %}">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1>🔐 数据加密与密码管理系统</h1>
+                    <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('passwords')">密码管理</button>
+                    <button class="tab" onclick="showTab('file-encrypt')">文件加密</button>
+                    <button class="tab" onclick="showTab('text-encrypt')">文本加密</button>
+                    <button class="tab" onclick="showTab('settings')">设置</button>
+                </div>
+                
+                <!-- 密码管理标签页 -->
+                <div id="passwords-tab" class="tab-content active">
+                    <div id="password-alert"></div>
+                    
+                    <div class="grid-2">
+                        <!-- 左侧：密码列表 -->
+                        <div>
+                            <h2>已保存的密码</h2>
+                            <div id="password-list" class="password-list">
+                                <div class="loading">加载中...</div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-primary" onclick="viewPassword()">查看密码</button>
+                                <button class="btn btn-success" onclick="copyPassword()">复制密码</button>
+                                <button class="btn btn-danger" onclick="deletePassword()">删除密码</button>
+                                <button class="btn btn-secondary" onclick="loadPasswords()">刷新列表</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 右侧：添加新密码 -->
+                        <div>
+                            <h2>添加新密码</h2>
+                            <form id="add-password-form" onsubmit="return false;">
+                                <div class="form-group">
+                                    <label>网站/服务名称</label>
+                                    <input type="text" id="password-site" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>用户名</label>
+                                    <input type="text" id="password-username">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>密码</label>
+                                    <input type="text" id="password-value" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-secondary" onclick="generatePassword()">生成强密码</button>
+                                    <label style="display: inline; margin-left: 10px;">长度:</label>
+                                    <input type="number" id="password-length" value="16" min="8" max="32" style="width: 80px; display: inline-block; margin-left: 5px;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>备注（可选）</label>
+                                    <textarea id="password-notes"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" onclick="addPassword()">保存密码</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文件加密标签页 -->
+                <div id="file-encrypt-tab" class="tab-content">
+                    <div id="file-alert"></div>
+                    
+                    <!-- 方式选择 -->
+                    <div style="margin-bottom: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <label style="font-weight: 600; margin-bottom: 10px; display: block;">选择加密方式：</label>
+                        <div>
+                            <input type="radio" id="mode-upload" name="encrypt-mode" value="upload" checked onchange="toggleEncryptMode()">
+                            <label for="mode-upload" style="display: inline; margin-right: 20px; cursor: pointer;">上传文件（下载加密结果）</label>
+                            
+                            <input type="radio" id="mode-local" name="encrypt-mode" value="local" onchange="toggleEncryptMode()">
+                            <label for="mode-local" style="display: inline; cursor: pointer;">本地路径（加密到同一目录）</label>
+                        </div>
+                    </div>
+                    
+                    <!-- 上传模式 -->
+                    <div id="upload-mode-section">
+                        <h2>📁 加密文件（上传模式）</h2>
+                        <div class="info-box" style="font-size: 12px; margin-bottom: 15px;">
+                            上传文件到服务器加密，完成后自动下载加密文件
+                        </div>
+                        <div class="form-group">
+                            <label>选择要加密的文件</label>
+                            <div class="file-input-wrapper">
+                                <label class="file-input-label" for="encrypt-file-input">📂 选择文件</label>
+                                <input type="file" id="encrypt-file-input" onchange="displayFilename('encrypt')">
+                                <span id="encrypt-filename" class="filename-display">未选择文件</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="encryptFile()">🔒 上传并加密</button>
+                        
+                        <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                        
+                        <h2>🔓 解密文件（上传模式）</h2>
+                        <div class="info-box" style="font-size: 12px; margin-bottom: 15px;">
+                            上传加密文件到服务器解密，完成后自动下载原始文件
+                        </div>
+                        <div class="form-group">
+                            <label>选择要解密的文件</label>
+                            <div class="file-input-wrapper">
+                                <label class="file-input-label" for="decrypt-file-input">📂 选择文件</label>
+                                <input type="file" id="decrypt-file-input" onchange="displayFilename('decrypt')">
+                                <span id="decrypt-filename" class="filename-display">未选择文件</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="decryptFile()">🔓 上传并解密</button>
+                    </div>
+                    
+                    <!-- 本地路径模式 -->
+                    <div id="local-mode-section" class="hidden">
+                        <h2>📁 加密本地文件</h2>
+                        <div class="info-box" style="font-size: 12px; margin-bottom: 15px;">
+                            直接加密本地文件，结果保存在同一目录下（文件名添加 .encrypted）
+                        </div>
+                        <div class="form-group">
+                            <label>文件路径（支持 ~ 表示用户目录）</label>
+                            <input type="text" id="encrypt-local-path" placeholder="例如: ~/Documents/secret.txt 或 /Users/username/file.pdf">
+                        </div>
+                        <button class="btn btn-primary" onclick="encryptFileLocal()">🔒 加密文件</button>
+                        
+                        <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                        
+                        <h2>🔓 解密本地文件</h2>
+                        <div class="info-box" style="font-size: 12px; margin-bottom: 15px;">
+                            直接解密本地文件，结果保存在同一目录下（自动移除 .encrypted 扩展名）
+                        </div>
+                        <div class="form-group">
+                            <label>文件路径</label>
+                            <input type="text" id="decrypt-local-path" placeholder="例如: ~/Documents/secret.txt.encrypted">
+                        </div>
+                        <button class="btn btn-primary" onclick="decryptFileLocal()">🔓 解密文件</button>
+                    </div>
+                </div>
+                
+                <!-- 文本加密标签页 -->
+                <div id="text-encrypt-tab" class="tab-content">
+                    <div id="text-alert"></div>
+                    
+                    <h2>🔒 加密文本</h2>
+                    <div class="form-group">
+                        <label>输入要加密的文本</label>
+                        <textarea id="text-encrypt-input"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="encryptText()">🔒 加密文本</button>
+                    
+                    <div class="form-group">
+                        <label>加密结果</label>
+                        <textarea id="text-encrypt-output" readonly style="font-family: monospace;"></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="copyText('text-encrypt-output')">复制结果</button>
+                    <button class="btn btn-secondary" onclick="clearTextEncrypt()">清空</button>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                    
+                    <h2>🔓 解密文本</h2>
+                    <div class="form-group">
+                        <label>输入要解密的文本</label>
+                        <textarea id="text-decrypt-input" style="font-family: monospace;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="decryptText()">🔓 解密文本</button>
+                    
+                    <div class="form-group">
+                        <label>解密结果</label>
+                        <textarea id="text-decrypt-output" readonly></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="copyText('text-decrypt-output')">复制结果</button>
+                    <button class="btn btn-secondary" onclick="clearTextDecrypt()">清空</button>
+                </div>
+                
+                <!-- 设置标签页 -->
+                <div id="settings-tab" class="tab-content">
+                    <div id="settings-alert"></div>
+                    
+                    <h2>更改主密码</h2>
+                    <form id="change-password-form" onsubmit="return false;">
+                        <div class="form-group">
+                            <label>当前密码</label>
+                            <input type="password" id="old-password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>新密码</label>
+                            <input type="password" id="new-password1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>确认新密码</label>
+                            <input type="password" id="new-password2" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" onclick="changePassword()">确认更改</button>
+                    </form>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                    
+                    <h2>关于</h2>
+                    <div class="info-box">
+                        <strong>数据加密与密码管理系统 v1.0</strong>
+                        <ul>
+                            <li>AES-256-GCM 军事级加密</li>
+                            <li>Argon2 密钥派生</li>
+                            <li>本地存储，绝不上传云端</li>
+                            <li>所有数据存储在 vault/ 目录</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedPassword = null;
+        
+        // 首次设置主密码
+        async function setupMasterPassword() {
+            const password1 = document.getElementById('setup-password1').value;
+            const password2 = document.getElementById('setup-password2').value;
+            
+            const response = await fetch('/api/setup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password1, password2})
+            });
+            
+            const data = await response.json();
+            showAlert('setup-alert', data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                setTimeout(() => {
+                    document.getElementById('setup-screen').classList.add('hidden');
+                    document.getElementById('main-screen').classList.remove('hidden');
+                    loadPasswords();
+                }, 1000);
+            }
+        }
+        
+        // 登录
+        async function login() {
+            const password = document.getElementById('login-password').value;
+            
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({password})
+            });
+            
+            const data = await response.json();
+            showAlert('login-alert', data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                setTimeout(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-screen').classList.remove('hidden');
+                    loadPasswords();
+                }, 1000);
+            }
+        }
+        
+        // 退出登录
+        async function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                await fetch('/api/logout', {method: 'POST'});
+                location.reload();
+            }
+        }
+        
+        // 切换标签页
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            if (tabName === 'passwords') {
+                loadPasswords();
+            }
+        }
+        
+        // 加载密码列表
+        async function loadPasswords() {
+            const listDiv = document.getElementById('password-list');
+            listDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            const response = await fetch('/api/passwords/list');
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.passwords.length === 0) {
+                    listDiv.innerHTML = '<div class="loading">暂无密码</div>';
+                } else {
+                    listDiv.innerHTML = '';
+                    data.passwords.forEach(site => {
+                        const item = document.createElement('div');
+                        item.className = 'password-item';
+                        item.textContent = site;
+                        item.onclick = () => selectPassword(site, item);
+                        listDiv.appendChild(item);
+                    });
+                }
+            } else {
+                showAlert('password-alert', data.message, 'error');
+            }
+        }
+        
+        // 选择密码项
+        function selectPassword(site, element) {
+            document.querySelectorAll('.password-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedPassword = site;
+        }
+        
+        // 添加密码
+        async function addPassword() {
+            const site = document.getElementById('password-site').value;
+            const username = document.getElementById('password-username').value;
+            const password = document.getElementById('password-value').value;
+            const notes = document.getElementById('password-notes').value;
+            
+            const response = await fetch('/api/passwords/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({site, username, password, notes})
+            });
+            
+            const data = await response.json();
+            showAlert('password-alert', data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                document.getElementById('add-password-form').reset();
+                loadPasswords();
+            }
+        }
+        
+        // 查看密码
+        async function viewPassword() {
+            if (!selectedPassword) {
+                showAlert('password-alert', '请先选择一个密码项', 'error');
+                return;
+            }
+            
+            const response = await fetch(`/api/passwords/get/${encodeURIComponent(selectedPassword)}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const info = `网站/服务: ${data.data.site}\n用户名: ${data.data.username}\n密码: ${data.data.password}\n${data.data.notes ? '备注: ' + data.data.notes : ''}`;
+                alert(info);
+            } else {
+                showAlert('password-alert', data.message, 'error');
+            }
+        }
+        
+        // 复制密码
+        async function copyPassword() {
+            if (!selectedPassword) {
+                showAlert('password-alert', '请先选择一个密码项', 'error');
+                return;
+            }
+            
+            const response = await fetch(`/api/passwords/get/${encodeURIComponent(selectedPassword)}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                navigator.clipboard.writeText(data.data.password);
+                showAlert('password-alert', '✅ 密码已复制到剪贴板', 'success');
+            } else {
+                showAlert('password-alert', data.message, 'error');
+            }
+        }
+        
+        // 删除密码
+        async function deletePassword() {
+            if (!selectedPassword) {
+                showAlert('password-alert', '请先选择一个密码项', 'error');
+                return;
+            }
+            
+            if (!confirm(`确定要删除 '${selectedPassword}' 的密码吗？`)) {
+                return;
+            }
+            
+            const response = await fetch(`/api/passwords/delete/${encodeURIComponent(selectedPassword)}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            showAlert('password-alert', data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                selectedPassword = null;
+                loadPasswords();
+            }
+        }
+        
+        // 生成强密码
+        async function generatePassword() {
+            const length = document.getElementById('password-length').value;
+            
+            const response = await fetch('/api/passwords/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({length})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('password-value').value = data.password;
+                showAlert('password-alert', `已生成${length}位强密码`, 'success');
+            }
+        }
+        
+        // 加密文本
+        async function encryptText() {
+            const text = document.getElementById('text-encrypt-input').value;
+            
+            if (!text.trim()) {
+                showAlert('text-alert', '请输入要加密的文本', 'error');
+                return;
+            }
+            
+            const response = await fetch('/api/text/encrypt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('text-encrypt-output').value = data.encrypted;
+                showAlert('text-alert', '✅ 文本加密成功', 'success');
+            } else {
+                showAlert('text-alert', data.message, 'error');
+            }
+        }
+        
+        // 解密文本
+        async function decryptText() {
+            const text = document.getElementById('text-decrypt-input').value;
+            
+            if (!text.trim()) {
+                showAlert('text-alert', '请输入要解密的文本', 'error');
+                return;
+            }
+            
+            const response = await fetch('/api/text/decrypt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('text-decrypt-output').value = data.decrypted;
+                showAlert('text-alert', '✅ 文本解密成功', 'success');
+            } else {
+                showAlert('text-alert', data.message, 'error');
+            }
+        }
+        
+        // 切换加密模式
+        function toggleEncryptMode() {
+            const mode = document.querySelector('input[name="encrypt-mode"]:checked').value;
+            
+            if (mode === 'upload') {
+                document.getElementById('upload-mode-section').classList.remove('hidden');
+                document.getElementById('local-mode-section').classList.add('hidden');
+            } else {
+                document.getElementById('upload-mode-section').classList.add('hidden');
+                document.getElementById('local-mode-section').classList.remove('hidden');
+            }
+        }
+        
+        // 加密文件（上传模式）
+        async function encryptFile() {
+            const fileInput = document.getElementById('encrypt-file-input');
+            
+            if (!fileInput.files[0]) {
+                showAlert('file-alert', '请选择要加密的文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            showAlert('file-alert', '正在加密文件，请稍候...', 'info');
+            
+            const response = await fetch('/api/file/encrypt', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('file-alert', `✅ ${data.message}`, 'success');
+                // 自动下载加密后的文件
+                window.location.href = data.download_url;
+            } else {
+                showAlert('file-alert', data.message, 'error');
+            }
+        }
+        
+        // 解密文件（上传模式）
+        async function decryptFile() {
+            const fileInput = document.getElementById('decrypt-file-input');
+            
+            if (!fileInput.files[0]) {
+                showAlert('file-alert', '请选择要解密的文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            showAlert('file-alert', '正在解密文件，请稍候...', 'info');
+            
+            const response = await fetch('/api/file/decrypt', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('file-alert', `✅ ${data.message}`, 'success');
+                // 自动下载解密后的文件
+                window.location.href = data.download_url;
+            } else {
+                showAlert('file-alert', data.message, 'error');
+            }
+        }
+        
+        // 加密本地文件
+        async function encryptFileLocal() {
+            const inputPath = document.getElementById('encrypt-local-path').value.trim();
+            
+            if (!inputPath) {
+                showAlert('file-alert', '请输入文件路径', 'error');
+                return;
+            }
+            
+            showAlert('file-alert', '正在加密文件，请稍候...', 'info');
+            
+            const response = await fetch('/api/file/encrypt-local', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({input_path: inputPath})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('file-alert', `✅ ${data.message}\n保存位置: ${data.output_path}`, 'success');
+                document.getElementById('encrypt-local-path').value = '';
+            } else {
+                showAlert('file-alert', data.message, 'error');
+            }
+        }
+        
+        // 解密本地文件
+        async function decryptFileLocal() {
+            const inputPath = document.getElementById('decrypt-local-path').value.trim();
+            
+            if (!inputPath) {
+                showAlert('file-alert', '请输入文件路径', 'error');
+                return;
+            }
+            
+            showAlert('file-alert', '正在解密文件，请稍候...', 'info');
+            
+            const response = await fetch('/api/file/decrypt-local', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({input_path: inputPath})
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('file-alert', `✅ ${data.message}\n保存位置: ${data.output_path}`, 'success');
+                document.getElementById('decrypt-local-path').value = '';
+            } else {
+                showAlert('file-alert', data.message, 'error');
+            }
+        }
+        
+        // 更改主密码
+        async function changePassword() {
+            const oldPassword = document.getElementById('old-password').value;
+            const newPassword1 = document.getElementById('new-password1').value;
+            const newPassword2 = document.getElementById('new-password2').value;
+            
+            const response = await fetch('/api/change-password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({old_password: oldPassword, new_password1: newPassword1, new_password2: newPassword2})
+            });
+            
+            const data = await response.json();
+            showAlert('settings-alert', data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                document.getElementById('change-password-form').reset();
+            }
+        }
+        
+        // 显示文件名
+        function displayFilename(type) {
+            const input = document.getElementById(type + '-file-input');
+            const display = document.getElementById(type + '-filename');
+            
+            if (input.files[0]) {
+                display.textContent = input.files[0].name;
+            } else {
+                display.textContent = '未选择文件';
+            }
+        }
+        
+        // 复制文本
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).value;
+            
+            if (text) {
+                navigator.clipboard.writeText(text);
+                showAlert('text-alert', '✅ 已复制到剪贴板', 'success');
+            } else {
+                showAlert('text-alert', '没有可复制的内容', 'error');
+            }
+        }
+        
+        // 清空文本加密
+        function clearTextEncrypt() {
+            document.getElementById('text-encrypt-input').value = '';
+            document.getElementById('text-encrypt-output').value = '';
+        }
+        
+        // 清空文本解密
+        function clearTextDecrypt() {
+            document.getElementById('text-decrypt-input').value = '';
+            document.getElementById('text-decrypt-output').value = '';
+        }
+        
+        // 显示提示信息
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果已登录，加载密码列表
+            if (!document.getElementById('main-screen').classList.contains('hidden')) {
+                loadPasswords();
+            }
+            
+            // 回车登录
+            document.getElementById('login-password')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+            
+            // 回车设置密码
+            document.getElementById('setup-password2')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    setupMasterPassword();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
